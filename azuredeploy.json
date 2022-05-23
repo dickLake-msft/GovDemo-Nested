@@ -28,14 +28,7 @@
         "WebApp":"WebApps-RG"
     },
     "resources": [{
-        "name": "[concat(parameters('rg-name'), '-', if(equals(copyIndex(),0), variables('WindowsServerRG'), 
-                                                         if(equals(copyIndex(), 1), variables('LinuxServerRG'), 
-                                                         if(equals(copyIndex(),2), variables('StorageRG'), 
-                                                         if(equals(copyIndex(),3), variables('ContainersRG'),
-                                                         if(equals(copyIndex(),4),variables('SOC'),
-                                                         if(equals(copyIndex(),5), variables('Hub'),
-                                                         if(equals(copyIndex(),6), variables('Vaults'),
-                                                         if(equals(copyIndex(),7), variables('DB'), variables('WebApp'))))))))))]",
+        "name": "[concat(parameters('rg-name'), '-', if(equals(copyIndex(),0), variables('WindowsServerRG'), if(equals(copyIndex(), 1), variables('LinuxServerRG'), if(equals(copyIndex(),2), variables('StorageRG'), if(equals(copyIndex(),3), variables('ContainersRG'),if(equals(copyIndex(),4),variables('SOC'),if(equals(copyIndex(),5), variables('Hub'),if(equals(copyIndex(),6), variables('Vaults'),if(equals(copyIndex(),7), variables('DB'), variables('WebApp'))))))))))]",
         "type": "Microsoft.Resources/resourceGroups",
         "apiVersion": "2021-01-01",
         "location": "[parameters('rg-location')]",
