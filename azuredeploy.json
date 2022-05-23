@@ -5,7 +5,7 @@
     "parameters": {
         "artifactsLocation": {
             "type": "string",
-            "defaultValue": "https%3A%2F%2Fraw.githubusercontent.com%2FdickLake-msft%2FGovDemo-Nested%2Fmain",
+            "defaultValue": "https://raw.githubusercontent.com/dickLake-msft/GovDemo-Nested/main",
             "metadata": {
                 "description": "Path to the github repo or the storage account container"
             }
