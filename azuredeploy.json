@@ -62,6 +62,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
             ],
+            "resourceGroup":"ContosoGov-Hub-RG",
             "properties":{
                 "mode":"Incremental",
                 "templateLink":{
