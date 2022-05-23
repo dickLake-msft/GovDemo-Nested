@@ -1,7 +1,19 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "artifactsLocation": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/Azure-Network-Security/master/Lab%20Templates/Lab%20Template%20-%20NetSec%20Demo%20Lab/",
+            "metadata": {
+                "description": "Path to the github repo or the storage account container"
+            }
+        },
+        "_sasToken":
+         {
+            "type": "secureString",
+            "defaultValue": ""
+        },
         "rg-location": {
             "type": "string",
             "defaultValue": "usgovarizona",
@@ -16,32 +28,28 @@
         }
     },
     "functions": [],
-    "variables": {
-        "WindowsServerRG": "WindowsServers-RG",
-        "LinuxServerRG": "LinuxServers-RG",
-        "StorageRG": "Storage-RG",
-        "ContainersRG":"Containers-RG",
-        "SOC": "SOC-RG",
-        "Hub":"Hub-RG",
-        "Vaults": "Vaults-RG",
-        "DB": "Databases-RG",
-        "WebApp":"WebApps-RG"
-    },
-    "resources": [{
-        "name": "[concat(parameters('rg-name'), '-', if(equals(copyIndex(),0), variables('WindowsServerRG'), if(equals(copyIndex(), 1), variables('LinuxServerRG'), if(equals(copyIndex(),2), variables('StorageRG'), if(equals(copyIndex(),3), variables('ContainersRG'),if(equals(copyIndex(),4),variables('SOC'),if(equals(copyIndex(),5), variables('Hub'),if(equals(copyIndex(),6), variables('Vaults'),if(equals(copyIndex(),7), variables('DB'), variables('WebApp'))))))))))]",
-        "type": "Microsoft.Resources/resourceGroups",
-        "apiVersion": "2021-01-01",
-        "location": "[parameters('rg-location')]",
-        "dependsOn": [],
-        "tags": {
-                "createdBy": "dilake",
-                "Purpose": "ContosoGov Demo"
-            },
-        "copy":{
-            "name":"rg-copy",
-            "count": 9
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "Basic_ResourceGroups",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('artifactsLocation'), '/Networking/keyVault.json' , parameters('_sasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "rg-name": {
+                        "value": "[parameters('rg-name')]"
+                    },
+                    "rg-location": {
+                        "value": "[parameters('rg-location')]"
+                    }
+                }
+            }
         }
-    }
     ],
     "outputs": {}
 }
