@@ -1,0 +1,384 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hubNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "ContosoGov-vnet-hub",
+                "addressPrefix": "10.0.0.0/20"
+            }
+        },
+        "bastionHost": {
+            "type": "object",
+            "defaultValue": {
+                "name": "AzureBastionHost",
+                "publicIPAddressName": "bastion-pip",
+                "subnetName": "AzureBastionSubnet",
+                "nsgName": "nsg-hub-bastion",
+                "subnetPrefix": "10.0.1.0/29"
+            }
+        },
+        "azureFirewall": {
+            "type": "object",
+            "defaultValue": {
+                "name": "AzureFirewall",
+                "publicIPAddressName": "firewall-pip",
+                "subnetName": "AzureFirewallSubnet",
+                "subnetPrefix": "10.0.3.0/26",
+                "routeName": "r-nexthop-to-fw"
+            }
+        },
+        "vpnGateway": {
+            "type": "object",
+            "defaultValue": {
+                "name": "Hub-vgw-gateway",
+                "subnetName": "GatewaySubnet",
+                "subnetPrefix": "10.0.2.0/27",
+                "pipName": "vgw-gateway-pip"
+            }
+        },
+        "deployVpnGateway": {
+            "type": "bool",
+            "defaultValue": false
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Hub virtual network",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('hubNetwork').name]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hubNetwork').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('azureFirewall').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('azureFirewall').subnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('bastionHost').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('bastionHost').subnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vpnGateway').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vpnGateway').subnetPrefix]"
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Subnet for Azure Firewall",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', parameters('azureFirewall').subnetName)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]"
+            ],
+            "properties": {
+                "addressPrefix": "[parameters('azureFirewall').subnetPrefix]"
+            }
+        },
+        {
+            "comments": "Public IP address for Azure Firewall",
+            "apiVersion": "2019-11-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('azureFirewall').publicIPAddressName]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "Azure Firewall",
+            "type": "Microsoft.Network/azureFirewalls",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('azureFirewall').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall').publicIPAddressName)]"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "AZFW_VNet",
+                    "tier": "Premium"
+                },
+                "threatIntelMode": "Alert",
+                "additionalProperties": {},
+                "ipConfigurations": [
+                    {
+                        "name": "[parameters('azureFirewall').name]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall').publicIPAddressName)]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').name, parameters('azureFirewall').subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "resources": [
+                
+            ]
+        },
+        {
+            "comments": "Route / force tunnel from spokes to Azure firewall",
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('azureFirewall').routeName]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall').name)]"
+            ],
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "[parameters('azureFirewall').routeName]",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Public IP address for Bastion",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('bastionHost').publicIPAddressName]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "Network security group, rules for Bastion",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('bastionHost').nsgName]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "bastion-in-allow",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-control-in-allow",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "GatewayManager",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-in-host",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRanges": [
+                                "8080",
+                                "5701"
+                            ],
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-vnet-out-allow",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRanges": [
+                                "22",
+                                "3389"
+                            ],
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-azure-out-allow",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "AzureCloud",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-out-host",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRanges": [
+                                "8080",
+                                "5701"
+                            ],
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "bastion-out-deny",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 1000,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Subnet for Bastion",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', parameters('bastionHost').subnetName)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionHost').nsgName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]"
+            ],
+            "properties": {
+                "addressPrefix": "[parameters('bastionHost').subnetPrefix]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionHost').nsgName)]"
+                }
+            }
+        },
+        {
+            "comments": "Azure Bastion configuration",
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('bastionHost').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]",
+                "[resourceId('Microsoft.Network/publicIpAddresses', parameters('bastionHost').publicIPAddressName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').name, parameters('bastionHost').subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('bastionHost').publicIPAddressName)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Public IP address for VPN Gateway",
+            "condition": "[parameters('deployVpnGateway')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('vpnGateway').pipName]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "comments": "VPN Gateway configuration (optional)",
+            "condition": "[parameters('deployVpnGateway')]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('vpnGateway').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnGateway').pipName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').name, parameters('vpnGateway').subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnGateway').pipName)]"
+                            }
+                        },
+                        "name": "vnetGatewayConfig"
+                    }
+                ],
+                "sku": {
+                    "name": "Basic",
+                    "tier": "Basic"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false
+            },
+            "resources": [ ]
+        }
+    ],
+    "outputs": {}
+}
