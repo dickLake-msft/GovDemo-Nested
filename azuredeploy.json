@@ -29,7 +29,9 @@
         }
     },
     "functions": [],
-    "variables": {},
+    "variables": {
+        "nested":"/nestedtemplates/"
+    },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
@@ -39,7 +41,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), '/nestedtemplates/resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -48,6 +50,58 @@
                     },
                     "rg-location": {
                         "value": "[parameters('rg-location')]"
+                    }
+                }
+            }
+        },
+        {
+            "type":"Microsoft.Resources/deployments",
+            "apiVersion":"2021-04-01",
+            "name":"hub_deployment",
+            "location":"[parameters('rg-location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
+            ],
+            "properties":{
+                "mode":"Incremental",
+                "templateLink":{
+                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'hub.azuredeploy.json', parameters('_sasToken') )]"
+                },
+                "parameters": {
+                   "hubNetwork": {
+                        "value": {
+                            "name": "ContosoGov-vnet-hub",
+                            "addressPrefix": "10.0.0.0/20"
+                        }
+                    },
+                    "bastionHost": {
+                        "value": {
+                            "name": "AzureBastionHost",
+                            "publicIPAddressName": "bastion-pip",
+                            "subnetName": "AzureBastionSubnet",
+                            "nsgName": "nsg-hub-bastion",
+                            "subnetPrefix": "10.0.1.0/29"
+                        }
+                    },
+                    "azureFirewall": {
+                        "value": {
+                            "name": "Hub-Firewall",
+                            "publicIPAddressName": "firewall-pip",
+                            "subnetName": "AzureFirewallSubnet",
+                            "subnetPrefix": "10.0.3.0/26",
+                            "routeName": "r-nexthop-to-fw"
+                        }
+                    },
+                    "vpnGateway": {
+                        "value": {
+                            "name": "Hub-vgw-gateway",
+                            "subnetName": "GatewaySubnet",
+                            "subnetPrefix": "10.0.2.0/27",
+                            "pipName": "vgw-gateway-pip"
+                        }
+                    },
+                    "deployVpnGateway": {
+                        "value": false
                     }
                 }
             }
