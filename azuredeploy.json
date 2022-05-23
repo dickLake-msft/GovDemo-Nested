@@ -35,10 +35,11 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "name": "Basic_ResourceGroups",
+            "location": "[parameters('rg-location')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), '/nested/resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), '/nestedtemplates/resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
