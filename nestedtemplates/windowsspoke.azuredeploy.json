@@ -9,7 +9,7 @@
                 "addressPrefix": "10.100.0.0/16",
                 "subnetName": "snet-spoke-resources",
                 "subnetPrefix": "10.100.0.0/16",
-                "subnetNsgName": "WindowsServers-resources-nsg"
+                "subnetNsgName": "spoke-one-resources-nsg"
             }
         },
         "adminUserName": {
