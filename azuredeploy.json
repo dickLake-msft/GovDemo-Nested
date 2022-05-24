@@ -222,7 +222,7 @@
                     "spokeNetwork": {
                         "value": {
                             "name": "[concat(parameters('rg-name'), '-vnet-spoke-WindowsServers')]",
-                            "addressPrefix": "10.200.0.0/16",
+                            "addressPrefix": "10.100.0.0/16",
                             "subnetName": "snet-spoke-resources",
                             "subnetPrefix": "10.100.0.0/16",
                             "subnetNsgName": "WindowsServers-resources-nsg"
