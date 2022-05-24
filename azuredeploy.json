@@ -31,7 +31,14 @@
             "type": "int",
             "defaultValue":0,
             "metadata": {
-                "description": "Number of Ubuntu machines to deploy to linux spoke"
+                "description": "Number of Ubuntu machines to deploy to Linux Spoke"
+            }
+        },
+        "windowsVMCount": {
+            "type": "int",
+            "defaultValue":0,
+            "metadata": {
+                "description": "Number of Windows machines to deploy to Windows Spoke"
             }
         },
         "adminUserName": {
@@ -155,8 +162,8 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'Deploy_ResourceGroups')]",
-                "[resourceId('Microsoft.Resources/deployments', 'Deploy_Hub')]"
+                "Deploy_ResourceGroups",
+                "Deploy_Hub"
             ],
             "resourceGroup": "[concat(parameters('rg-name'), '-LinuxServers-RG')]",
             "properties": {
@@ -188,10 +195,56 @@
                         "value":"[parameters('vmSize')]"
                     },
                     "azureFirewallRouteId": {
-                        "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId]"
+                        "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
                     },
                     "hub-networkID": {
-                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId]"
+                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId.value]"
+                    }
+                }
+            }
+        },
+                {
+            "name": "Deploy_WindowsSpoke",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "Deploy_ResourceGroups",
+                "Deploy_Hub"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-WindowsServers-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'windowsspoke.azuredeploy.json' , parameters('_sasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "spokeNetwork": {
+                        "value": {
+                            "name": "[concat(parameters('rg-name'), '-vnet-spoke-WindowsServers')]",
+                            "addressPrefix": "10.200.0.0/16",
+                            "subnetName": "snet-spoke-resources",
+                            "subnetPrefix": "10.100.0.0/16",
+                            "subnetNsgName": "WindowsServers-resources-nsg"
+                        }
+                    },
+                    "windowsVMCount": {
+                        "value":"[parameters('windowsVMCount')]"
+                    },
+                    "adminUserName": {
+                        "value":"[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "vmSize": {
+                        "value":"[parameters('vmSize')]"
+                    },
+                    "azureFirewallRouteId": {
+                        "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
+                    },
+                    "hub-networkID": {
+                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId.value]"
                     }
                 }
             }

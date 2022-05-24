@@ -1,0 +1,218 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "spokeNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "ContosoGov-vnet-WindowsServers",
+                "addressPrefix": "10.100.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.100.0.0/16",
+                "subnetNsgName": "WindowsServers-resources-nsg"
+            }
+        },
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "The admin user name for both the Windows and Linux virtual machines."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The admin password for both the Windows and Linux virtual machines."
+            }
+        },
+        "windowsVMCount": {
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "The count of Windows virtual machines to create."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_A1_v2"
+        },
+        "hub-networkID": {
+            "type": "string"
+        },
+        "azureFirewallRouteId": {
+            "type": "string"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "bastionHost_subnetPrefix":"10.0.1.0/29",
+        "peering-name-spoke-to-hub-one": "spoke-one-to-hub",
+        "nicNameWindows": "ContosoGov-Windows-nic-",
+        "vmNameWindows": "Windows-SVR-",
+        "windowsOSVersion": "2016-Datacenter"
+    },
+    "resources": [
+        {
+            "comments": "Network security group + rules for spoke network",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('spokeNetwork').subnetNsgName]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "bastion-in-vnet",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "[variables('bastionHost_subnetPrefix')]",
+                            "destinationPortRanges": [
+                                "22",
+                                "3389"
+                            ],
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "DenyAllInBound",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Spoke virtual network and subnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('spokeNetwork').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetwork').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('spokeNetwork').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
+                            },
+                            "routeTable": {
+                                "id": "[parameters('azureFirewallRouteId')]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Virtual network peering spoke one to hub",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetwork').name, '/', variables('peering-name-spoke-to-hub-one'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('hub-networkID')]"
+                }
+            }
+        },
+        {
+            "comments": "Network interface for Windows VMs (optional)",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(variables('nicNameWindows'), copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork').name, parameters('spokeNetwork').subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "niccopy",
+                "count": "[parameters('windowsVMCount')]"
+            }
+        },
+        {
+            "comments": "Windows VMs (optional)",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[concat(variables('vmNameWindows'), copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat(variables('nicNameWindows'), copyIndex())]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(variables('vmNameWindows'), copyIndex())]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "[variables('windowsOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNameWindows'), copyIndex()))]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "vmcopy",
+                "count": "[parameters('windowsVMCount')]"
+            }
+        }
+
+    ],
+    "outputs": {}
+}
