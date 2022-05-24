@@ -17,7 +17,7 @@
     },
     "functions": [],
     "variables": {
-        "rg_array":["WindowsServer-RG", "LinuxServers-RG", "Storage-RG", "Containers-RG", "SOC-RG", "Hub-RG", "Vaults-RG", "Databases-RG", "WebApps-RG"]
+        "rg_array":["WindowsServers-RG", "LinuxServers-RG", "Storage-RG", "Containers-RG", "SOC-RG", "Hub-RG", "Vaults-RG", "Databases-RG", "WebApps-RG"]
     },
     "resources": [{
         "name": "[concat(parameters('rg-name'), '-', variables('rg_array')[copyIndex()])]",
