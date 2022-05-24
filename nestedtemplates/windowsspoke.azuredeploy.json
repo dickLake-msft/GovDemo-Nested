@@ -109,7 +109,7 @@
                 },
                 "subnets": [
                     {
-                        "name":"a",
+                        "name":"[parameters('spokeNetwork').subnetName]",
                         "properties":{ 
                             "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]",
                             "networkSecurityGroup": {
