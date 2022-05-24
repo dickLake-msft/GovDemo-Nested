@@ -15,7 +15,7 @@
                 "description": "ResourceId of Windows Spoke"
             }
         },
-        "linux-Spoke-ResourceId": {
+        "Linux-Spoke-ResourceId": {
             "type": "string",
             "metadata": {
                 "description": "ResourceId of Linux Spoke"
@@ -58,10 +58,12 @@
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
-                    "id": "[parameters('linux-Spoke-ResourceID')]"
+                    "id": "[parameters('Linux-Spoke-ResourceID')]"
                 }
             }
         }
     ],
     "outputs": {}
 }
+
+

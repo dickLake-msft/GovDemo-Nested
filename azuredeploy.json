@@ -264,7 +264,7 @@
                     "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'hubtospoke.azuredeploy.json' , parameters('_sasToken'))]"
                 },
                 "parameters": {
-                    "linux-Spoke-ResouceId": {
+                    "Linux-Spoke-ResourceId": {
                         "value": "[reference('Deploy_LinuxSpoke').outputs.Linux_vNet_Id.value]"
                     },
                     "Windows-Spoke-ResourceId": {
