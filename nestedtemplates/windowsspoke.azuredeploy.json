@@ -109,12 +109,17 @@
                 },
                 "subnets": [
                     {
-                        "name":"[parameters('spokeNetwork').subnetName]",
-                        "properties":{ 
-                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]"
+                        "name": "[parameters('spokeNetwork').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
+                            },
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewallRouteId').routeName)]"
+                            }
                         }
                     }
-
                 ]
             },
             "resources": []
