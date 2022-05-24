@@ -380,5 +380,18 @@
             "resources": [ ]
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "azFirewallId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/azureFirewalls',parameters('azureFirewall').name)]"
+        },
+        "azFirewallRouteId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/routeTables',parameters('azureFirewall').routeName)]"
+        },
+        "hubNetworkId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks',parameters('hubNetwork').name)]"
+        }
+    }
 }

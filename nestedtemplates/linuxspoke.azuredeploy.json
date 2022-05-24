@@ -1,0 +1,217 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "spokeNetworkTwo": {
+            "type": "object",
+            "defaultValue": {
+                "name": "ContosoGov-vnet-spoke-two",
+                "addressPrefix": "10.200.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.200.0.0/16",
+                "subnetNsgName": "spoke-two-resources-nsg"
+            }
+        },
+        "linuxVMCount": {
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "The count of Linux virtual machines to create."
+            }
+        },
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "The admin user name for both the Windows and Linux virtual machines."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The admin password for both the Windows and Linux virtual machines."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_A1_v2"
+        },
+        "azureFirewallRouteId": {
+            "type": "string"
+        },
+        "hub-networkID": {
+            "type": "string"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "bastionHost_subnetPrefix":"10.0.1.0/29",
+        "peering-name-spoke-to-hub-two": "spoke-two-to-hub",
+        "nicNameLinux": "ContosoGov-Linux-nic-",
+        "vmNameLinux": "Linux-SVR-",
+        "osVersion": "16.04.0-LTS"
+    },
+    "resources": [
+        {
+            "comments": "Network security group + rules for linux network",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('spokeNetworkTwo').subnetNsgName]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "bastion-in-vnet",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "[variables('bastionHost_subnetPrefix')]",
+                            "destinationPortRanges": [
+                                "22",
+                                "3389"
+                            ],
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "DenyAllInBound",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "resources": [ ]
+        },
+        {
+            "comments": "Spoke virtual network and subnet configuration.",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('spokeNetworkTwo').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetworkTwo').subnetNsgName)]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetworkTwo').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('spokeNetworkTwo').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetworkTwo').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetworkTwo').subnetNsgName)]"
+                            },
+                            "routeTable": {
+                                "id": "[parameters('azureFirewallRouteId')]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "comments": "Virtual network peering spoke two to hub",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetworkTwo').name, '/', variables('peering-name-spoke-to-hub-two'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetworkTwo').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('hub-networkID')]"
+                }
+            }
+        },
+        {
+            "comments": "Network interface for Ubuntu VMs (optional)",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(variables('nicNameLinux'), copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetworkTwo').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetworkTwo').name, parameters('spokeNetworkTwo').subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "niccopy",
+                "count": "[parameters('linuxVMCount')]"
+            }
+        },
+        {
+            "comments": "Ubuntu VMs (optional)",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[concat(variables('vmNameLinux'), copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat(variables('nicNameLinux'), copyIndex())]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(variables('vmNameLinux'), copyIndex())]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "[variables('osVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNameLinux'), copyIndex()))]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "vmcopy",
+                "count": "[parameters('linuxVMCount')]"
+            }
+        }
+    ],
+    "outputs": {}
+}

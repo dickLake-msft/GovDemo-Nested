@@ -26,6 +26,33 @@
         "rg-name": {
             "type": "string",
             "defaultValue": "ContosoGov"
+        },
+        "linuxVMCount": {
+            "type": "int",
+            "defaultValue":0,
+            "metadata": {
+                "description": "Number of Ubuntu machines to deploy to linux spoke"
+            }
+        },
+        "adminUserName": {
+            "type": "string",
+            "defaultValue":"MDCDemoAdmin",
+            "metadata": {
+                "description": "Admin username for Linux and Windows VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password to RDP/SSH into VMs with.  NOTE: Having the same password across VMs is a bad practice.  This is for demo purposes only"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue":"Standard_A1_v2",
+            "metadata": {
+                "description": "Machine size for Linux and Windows VMs. Not meant for production workloads"
+            }
         }
     },
     "functions": [],
@@ -36,7 +63,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "Basic_ResourceGroups",
+            "name": "Deploy_ResourceGroups",
             "location": "[parameters('rg-location')]",
             "properties": {
                 "mode": "Incremental",
@@ -57,9 +84,9 @@
         {
             "type":"Microsoft.Resources/deployments",
             "apiVersion":"2021-04-01",
-            "name":"hub_deployment",
+            "name":"Deploy_Hub",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
+                "[resourceId('Microsoft.Resources/deployments', 'Deploy_ResourceGroups')]"
             ],
             "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
             "properties":{
@@ -111,7 +138,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
+                "[resourceId('Microsoft.Resources/deployments', 'Deploy_ResourceGroups')]"
             ],
             "resourceGroup": "[concat(parameters('rg-name'), '-SOC-RG')]",
             "properties": {
@@ -121,6 +148,52 @@
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {}
+            }
+        },
+        {
+            "name": "Deploy_LinuxSpoke",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'Deploy_ResourceGroups')]",
+                "[resourceId('Microsoft.Resources/deployments', 'Deploy_Hub')]"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-LinuxServers-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'linuxspoke.azuredeploy.json' , parameters('_sasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "spokeNetworkTwo": {
+                        "value": {
+                            "name": "[concat(parameters('rg-name'), '-vnet-spoke-two')]",
+                            "addressPrefix": "10.200.0.0/16",
+                            "subnetName": "snet-spoke-resources",
+                            "subnetPrefix": "10.200.0.0/16",
+                            "subnetNsgName": "spoke-two-resources-nsg"
+                        }
+                    },
+                    "linuxVMCount": {
+                        "value":"[parameters('linuxVMCount')]"
+                    },
+                    "adminUserName": {
+                        "value":"[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "vmSize": {
+                        "value":"[parameters('vmSize')]"
+                    },
+                    "azureFirewallRouteId": {
+                        "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId]"
+                    },
+                    "hub-networkID": {
+                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId]"
+                    }
+                }
             }
         }
     ],
