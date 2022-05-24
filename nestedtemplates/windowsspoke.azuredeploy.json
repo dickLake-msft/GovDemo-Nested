@@ -108,6 +108,15 @@
                     ]
                 },
                 "subnets": [
+                    {
+                        "name":"a",
+                        "properties":{ 
+                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
+                            }
+                        }
+                    }
 
                 ]
             },
