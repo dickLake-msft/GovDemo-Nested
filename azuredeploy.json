@@ -264,10 +264,10 @@
                     "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'hubtospoke.azuredeploy.json' , parameters('_sasToken'))]"
                 },
                 "parameters": {
-                    "Linux-vNet-Id": {
+                    "Linux-Spoke-ResouceId": {
                         "value": "[reference('Deploy_LinuxSpoke').outputs.Linux_vNet_Id.value]"
                     },
-                    "Windows-vNet-Id": {
+                    "Windows-Spoke-ResourceId": {
                         "value": "[reference('Deploy_WindowsSpoke').outputs.Windows_vNet_Id.value]"
                     }
                 }
@@ -310,7 +310,7 @@
                     "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'linuxSpokeToHub.azuredeploy.json' , parameters('_sasToken'))]"
                 },
                 "parameters": {
-                    "spokeName": {
+                    "spokeNetworkName": {
                         "value": "LinuxToHub"
                     },
                     "hub-vNet-Id": {
