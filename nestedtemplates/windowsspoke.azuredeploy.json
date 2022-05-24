@@ -214,5 +214,10 @@
         }
 
     ],
-    "outputs": {}
+    "outputs": {
+        "Windows_vNet_Id": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork').name)]"
+        }
+    }
 }

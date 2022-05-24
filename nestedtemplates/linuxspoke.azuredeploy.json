@@ -213,5 +213,10 @@
             }
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "Linux_vNet_Id": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetworkTwo').name)]"
+        }
+    }
 }

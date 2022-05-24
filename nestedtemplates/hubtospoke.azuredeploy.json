@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hubNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "ContosoGov-vnet-hub",
+                "addressPrefix": "10.0.0.0/20"
+            }
+        },
+        "Windows-Spoke-ResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "ResourceId of Windows Spoke"
+            }
+        },
+        "Linux-Spoke-ResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "ResourceId of LinuxSpoke"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "peering-name-hub-to-spoke-one": "hub-to-windows-spoke",
+        "peering-name-hub-to-spoke-two": "hub-to-linux-two"
+    },
+    "resources": [
+        {
+            "comments": "Virtual network peering hub to spoke one",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-one'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('Windows-Spoke-ResourceID')]"
+                }
+            }
+        },
+        {
+            "comments": "Virtual network peering hub to spoke two",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-two'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('Linux-Spoke-ResourceID')]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
