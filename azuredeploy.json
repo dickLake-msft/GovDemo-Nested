@@ -105,6 +105,23 @@
                     }
                 }
             }
+        },
+        {
+            "name": "Deploy_SOC",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-SOC-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'soc.azuredeploy.json' , parameters('_sasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {}
+            }
         }
     ],
     "outputs": {}
