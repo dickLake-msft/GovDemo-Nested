@@ -111,10 +111,7 @@
                     {
                         "name":"[parameters('spokeNetwork').subnetName]",
                         "properties":{ 
-                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
-                            }
+                            "addressPrefix": "[parameters('spokeNetwork').subnetPrefix]"
                         }
                     }
 
