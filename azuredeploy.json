@@ -58,11 +58,10 @@
             "type":"Microsoft.Resources/deployments",
             "apiVersion":"2021-04-01",
             "name":"hub_deployment",
-            "location":"[parameters('rg-location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'Basic_ResourceGroups')]"
             ],
-            "resourceGroup":"ContosoGov-Hub-RG",
+            "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
             "properties":{
                 "mode":"Incremental",
                 "templateLink":{
