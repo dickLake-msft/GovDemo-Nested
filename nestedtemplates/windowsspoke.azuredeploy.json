@@ -116,7 +116,7 @@
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetwork').subnetNsgName)]"
                             },
                             "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewallRouteId').routeName)]"
+                                "id": "[parameters('azureFirewallRouteId')]"
                             }
                         }
                     }
