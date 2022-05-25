@@ -64,7 +64,9 @@
     },
     "functions": [],
     "variables": {
-        "nested":"/nestedtemplates/"
+        "nested":"/nestedtemplates/",
+        "appServicePlan":"value",
+        "appService":"value"
     },
     "resources": [
         {
@@ -305,6 +307,47 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'storage.azuredeploy.json', parameters('_sasToken'))]"
+                },
+                "parameters":{
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Deploy_AppService",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn":[
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), '-WebApps-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'appservice.azuredeploy.json', parameters('_sasToken'))]"
+                },
+                "parameters":{
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Deploy_AppGateway",
+            "type": "Microsoft.Resources/deployments",
+            "condition":false,
+            "apiVersion": "2021-04-01",
+            "dependsOn":[
+                "Configure_Hub_To_Spoke_Peerings"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), '-WebApps-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'appgateway.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
                     "rg-name":{
