@@ -125,7 +125,7 @@
             "resources": []
         },
         {
-            "comments": "Virtual network peering spoke two to hub",
+            "comments": "Virtual network peering spoke to hub",
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "apiVersion": "2020-05-01",
             "name": "[concat(parameters('spokeNetworkTwo').name, '/', variables('peering-name-spoke-to-hub-two'))]",
