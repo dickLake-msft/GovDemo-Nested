@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appGatewaySpoke": {
+      "type": "object"
+    },
+    "azureFirewallRouteId": {
+      "type": "string"
+    },
+    "hub-networkID": {
+      "type": "string"
+    }
+
+  },
+  "variables": {
+    "peering-name-spoke-to-hub": "WebApp-to-Hub"
+  },
+  "resources": [
+    {
+      "comments": "Create vNet.",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2020-05-01",
+      "name": "[parameters('appGatewaySpoke').name]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+          "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('appGatewaySpoke').subnetNsgName)]"
+      ],
+      "properties": {
+          "addressSpace": {
+              "addressPrefixes": [
+                  "[parameters('appGatewaySpoke').addressPrefix]"
+              ]
+          },
+          "subnets": [
+              {
+                  "name": "[parameters('appGatewaySpoke').subnetName]",
+                  "properties": {
+                      "addressPrefix": "[parameters('appGatewaySpoke').subnetPrefix]",
+                      "networkSecurityGroup": {
+                          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('appGatewaySpoke').subnetNsgName)]"
+                      },
+                      "routeTable": {
+                          "id": "[parameters('azureFirewallRouteId')]"
+                      }
+                  }
+              }
+          ]
+      },
+      "resources": []
+    },
+    {
+        "comments": "Virtual network peering spoke to hub",
+        "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+        "apiVersion": "2020-05-01",
+        "name": "[concat(parameters('appGatewaySpoke').name, '/', variables('peering-name-spoke-to-hub'))]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/virtualNetworks', parameters('appGatewaySpoke').name)]"
+        ],
+        "properties": {
+            "allowVirtualNetworkAccess": true,
+            "allowForwardedTraffic": false,
+            "allowGatewayTransit": false,
+            "useRemoteGateways": false,
+            "remoteVirtualNetwork": {
+                "id": "[parameters('hub-networkID')]"
+            }
+        }
+    }
+  ],
+  "outputs": {}
+}

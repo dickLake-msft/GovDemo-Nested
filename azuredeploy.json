@@ -64,7 +64,8 @@
     },
     "functions": [],
     "variables": {
-        "nested":"/nestedtemplates/",
+        "deploy":"/nestedtemplates/deploy/",
+        "configure":"/nestedtemplates/Configure/",
         "appServicePlan":"value",
         "appService":"value"
     },
@@ -77,7 +78,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), variables('deploy'), 'resourceGroups.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -101,7 +102,7 @@
             "properties":{
                 "mode":"Incremental",
                 "templateLink":{
-                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'hub.azuredeploy.json', parameters('_sasToken') )]"
+                    "uri":"[concat(parameters('artifactsLocation'), variables('deploy'), 'hub.azuredeploy.json', parameters('_sasToken') )]"
                 },
                 "parameters": {
                    "hubNetwork": {
@@ -153,7 +154,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'soc.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), variables('deploy'), 'soc.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {}
@@ -171,7 +172,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'linuxspoke.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), variables('deploy'), 'linuxspoke.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -217,7 +218,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'windowsspoke.azuredeploy.json' , parameters('_sasToken'))]",
+                    "uri": "[concat(parameters('artifactsLocation'), variables('deploy'), 'windowsspoke.azuredeploy.json' , parameters('_sasToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -252,25 +253,38 @@
             }
         },
         {
-            "name":"Configure_Hub_To_Spoke_Peerings",
+            "name":"Deploy_AppGateway",
             "type": "Microsoft.Resources/deployments",
+            "condition":false,
             "apiVersion": "2021-04-01",
-            "dependsOn": [
-                "Deploy_LinuxSpoke",
-                "Deploy_WindowsSpoke"
+            "dependsOn":[
+                "Deploy_ResourceGroups",
+                "Deploy_Hub"
             ],
-            "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
+            "resourceGroup":"[concat(parameters('rg-name'), '-WebApps-RG')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'hubtospoke.azuredeploy.json' , parameters('_sasToken'))]"
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'appgateway.azuredeploy.json', parameters('_sasToken'))]"
                 },
-                "parameters": {
-                    "Linux-Spoke-ResourceId": {
-                        "value": "[reference('Deploy_LinuxSpoke').outputs.Linux_vNet_Id.value]"
+                "parameters":{
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
                     },
-                    "Windows-Spoke-ResourceId": {
-                        "value": "[reference('Deploy_WindowsSpoke').outputs.Windows_vNet_Id.value]"
+                    "hub-networkID":{
+                        "value":"[reference('Deploy_Hub').outputs.hubNetworkId.value]"
+                    },
+                    "appGatewaySpoke": {
+                        "value": {
+                            "name": "[concat(parameters('rg-name'), '-vnet-spoke-WindowsServers')]",
+                            "addressPrefix": "10.150.0.0/16",
+                            "subnetName": "snet-spoke-resources",
+                            "subnetPrefix": "10.50.0.0/16",
+                            "subnetNsgName": "NOT_USED"
+                        }
+                    },
+                    "azureFirewallRouteId": {
+                        "type": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
                     }
                 }
             }
@@ -286,7 +300,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'keyvault.azuredeploy.json', parameters('_sasToken'))]"
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'keyvault.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
                     "rg-name":{
@@ -306,7 +320,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'storage.azuredeploy.json', parameters('_sasToken'))]"
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'storage.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
                     "rg-name":{
@@ -326,7 +340,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'appservice.azuredeploy.json', parameters('_sasToken'))]"
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'appservice.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
                     "rg-name":{
@@ -336,22 +350,25 @@
             }
         },
         {
-            "name":"Deploy_AppGateway",
+            "name":"Configure_Hub_To_Spoke_Peerings",
             "type": "Microsoft.Resources/deployments",
-            "condition":false,
             "apiVersion": "2021-04-01",
-            "dependsOn":[
-                "Configure_Hub_To_Spoke_Peerings"
+            "dependsOn": [
+                "Deploy_LinuxSpoke",
+                "Deploy_WindowsSpoke"
             ],
-            "resourceGroup":"[concat(parameters('rg-name'), '-WebApps-RG')]",
+            "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'appgateway.azuredeploy.json', parameters('_sasToken'))]"
+                    "uri": "[concat(parameters('artifactsLocation'), variables('Configure'), 'hubtospoke.azuredeploy.json' , parameters('_sasToken'))]"
                 },
-                "parameters":{
-                    "rg-name":{
-                        "value":"[parameters('rg-name')]"
+                "parameters": {
+                    "Linux-Spoke-ResourceId": {
+                        "value": "[reference('Deploy_LinuxSpoke').outputs.Linux_vNet_Id.value]"
+                    },
+                    "Windows-Spoke-ResourceId": {
+                        "value": "[reference('Deploy_WindowsSpoke').outputs.Windows_vNet_Id.value]"
                     }
                 }
             }
