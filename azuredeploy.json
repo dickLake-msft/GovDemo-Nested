@@ -272,52 +272,6 @@
                     }
                 }
             }
-        },
-        {
-            "name":"Configure_Windows_Spoke_To_Hub_Peerings",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2021-04-01",
-            "dependsOn": [
-                "Configure_Hub_To_Spoke_Peerings"
-            ],
-            "resourceGroup":"[concat(parameters('rg-name'), '-WindowsServers-RG')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'windowsSpokeToHub.azuredeploy.json' , parameters('_sasToken'))]"
-                },
-                "parameters": {
-                    "spokeNetworkName": {
-                        "value": "windowsToHub"
-                    },
-                    "hub-vNet-Id": {
-                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId.value]"
-                    }
-                }
-            }
-        },
-        {
-            "name":"Configure_Linux_Spoke_To_Hub_Peerings",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2021-04-01",
-            "dependsOn": [
-                "Configure_Hub_To_Spoke_Peerings"
-            ],
-            "resourceGroup":"[concat(parameters('rg-name'), '-LinuxServers-RG')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(parameters('artifactsLocation'), variables('nested'), 'linuxSpokeToHub.azuredeploy.json' , parameters('_sasToken'))]"
-                },
-                "parameters": {
-                    "spokeNetworkName": {
-                        "value": "LinuxToHub"
-                    },
-                    "hub-vNet-Id": {
-                        "value": "[reference('Deploy_Hub').outputs.hubNetworkId.value]"
-                    }
-                }
-            }
         }
     ],
     "outputs": {}
