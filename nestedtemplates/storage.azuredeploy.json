@@ -8,7 +8,7 @@
     },
     "functions": [],
     "variables": {
-        "name": "[tolower(concat(parameters('rg-name'), 'sa', uniqueString(resourceGroup().id)))]"
+        "name": "[format('store{0}', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -24,7 +24,19 @@
                 "name": "Premium_LRS",
                 "tier": "Premium"
             }
-        }
+        },
+        {
+            "type": "Microsoft.Security/advancedThreatProtectionSettings",
+            "apiVersion": "2019-01-01",
+            "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('name'))]",
+            "name": "current",
+            "properties": {
+                "isEnabled": true
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('name'))]"
+            ]
+            }
     ],
     "outputs": {}
 }
