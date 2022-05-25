@@ -255,7 +255,6 @@
         {
             "name":"Deploy_AppGateway",
             "type": "Microsoft.Resources/deployments",
-            "condition":false,
             "apiVersion": "2021-04-01",
             "dependsOn":[
                 "Deploy_ResourceGroups",
