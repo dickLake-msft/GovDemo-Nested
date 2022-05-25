@@ -64,7 +64,7 @@
     },
     "functions": [],
     "variables": {
-        "deploy":"/nestedtemplates/deploy/",
+        "deploy":"/nestedtemplates/Deploy/",
         "configure":"/nestedtemplates/Configure/",
         "appServicePlan":"value",
         "appService":"value"
