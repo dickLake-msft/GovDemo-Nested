@@ -1,14 +1,18 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {},
+    "parameters": {
+        "rg-name": {
+            "type": "string"
+        }
+    },
     "functions": [],
     "variables": {
-        "tenantId": "[subscription().id]"
+        "tenantId": "61611e58-abbd-4826-9d63-f23b5a919686"
     },
     "resources": [
         {
-            "name": "DemoKeyVault",
+            "name": "[concat(parameters('rg-name'), '-DemoKeyVault')]",
             "type": "Microsoft.KeyVault/vaults",
             "apiVersion": "2019-09-01",
             "location": "[resourceGroup().location]",
@@ -25,7 +29,7 @@
                         "objectId":"5b8c76a0-ab6f-405b-9f91-44b33482b83b",
                         "tenantId":"[variables('tenantId')]",
                         "permissions": {
-                            "secrets":["list"]
+                            "secrets":["Get","List","Set","Delete"]
                         }
                     } 
                 ],
@@ -38,19 +42,7 @@
                     "bypass": "AzureServices"
                 }
             },
-            "resources": [
-                {
-                    "type": "secrets",
-                    "name": "ExampleSecret",
-                    "apiVersion": "2016-10-01",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.KeyVault/vaults', 'DemoKeyVault')]"
-                    ],
-                    "properties": {
-                        "value": "SuperSecretPassword"
-                    }
-                }
-            ]
+            "resources": [ ]
         }
     ],
     "outputs": {}
