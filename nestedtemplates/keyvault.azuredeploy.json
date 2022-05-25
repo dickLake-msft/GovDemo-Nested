@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "functions": [],
+    "variables": {
+        "tenantId": "[subscription().id]"
+    },
+    "resources": [
+        {
+            "name": "DemoKeyVault",
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2019-09-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "DemoKeyVault"
+            },
+            "properties": {
+                "tenantId": "[variables('tenantId')]",
+                "enabledForDeployment": true,
+                "enabledForTemplateDeployment": true,
+                "enabledForDiskEncryption": true,
+                "accessPolicies": [
+                    {
+                        "objectId":"5b8c76a0-ab6f-405b-9f91-44b33482b83b",
+                        "tenantId":"[variables('tenantId')]",
+                        "permissions": {
+                            "secrets":["list"]
+                        }
+                    } 
+                ],
+                "sku": {
+                    "name": "premium",
+                    "family": "A"
+                },
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "bypass": "AzureServices"
+                }
+            },
+            "resources": [
+                {
+                    "type": "secrets",
+                    "name": "ExampleSecret",
+                    "apiVersion": "2016-10-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', 'DemoKeyVault')]"
+                    ],
+                    "properties": {
+                        "value": "SuperSecretPassword"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}

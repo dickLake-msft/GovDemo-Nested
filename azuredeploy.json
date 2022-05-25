@@ -272,6 +272,21 @@
                     }
                 }
             }
+        },
+        {
+            "name":"Deploy_KeyVault",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn":[
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), 'Vaults-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('artifactsLocation'), variables('nested'), 'keyvault.azuredeploy.json', parameters('_sasToken'))]"
+                }
+            }
         }
     ],
     "outputs": {}
