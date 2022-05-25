@@ -8,7 +8,7 @@
     },
     "functions": [],
     "variables": {
-        "name": "[tolower(concat(parameters('rg-name'), '-sa-', uniqueString(resourceGroup().id)))]"
+        "name": "[tolower(concat(parameters('rg-name'), 'sa', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
         {
