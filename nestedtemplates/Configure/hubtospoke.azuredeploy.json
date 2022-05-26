@@ -20,12 +20,16 @@
             "metadata": {
                 "description": "ResourceId of Linux Spoke"
             }
+        },
+        "AppGateway-Spoke-ResourceId": {
+            "type": "string"
         }
     },
     "functions": [],
     "variables": {
         "peering-name-hub-to-spoke-one": "hub-to-windows-spoke",
-        "peering-name-hub-to-spoke-two": "hub-to-linux-two"
+        "peering-name-hub-to-spoke-two": "hub-to-linux-two",
+        "peering-name-hub-to-spoke-three": "hub-to-appGatway-spoke"
     },
     "resources": [
         {
@@ -59,6 +63,23 @@
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
                     "id": "[parameters('Linux-Spoke-ResourceID')]"
+                }
+            }
+        },
+        {
+            "comments": "Virtual network peering hub to spoke two",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-three'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('AppGateway-Spoke-ResourceId')]"
                 }
             }
         }
