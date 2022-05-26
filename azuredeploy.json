@@ -273,12 +273,15 @@
                             "name": "[concat(parameters('rg-name'), '-vnet-spoke-appGateway')]",
                             "addressPrefix": "10.150.0.0/16",
                             "subnetName": "snet-spoke-resources",
-                            "subnetPrefix": "10.50.0.0/16",
+                            "subnetPrefix": "10.150.0.0/16",
                             "subnetNsgName": "AppGatway-resources-nsg"
                         }
                     },
                     "azureFirewallRouteId": {
                         "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
+                    },
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
                     }
                 }
             }
@@ -349,7 +352,8 @@
             "apiVersion": "2021-04-01",
             "dependsOn": [
                 "Deploy_LinuxSpoke",
-                "Deploy_WindowsSpoke"
+                "Deploy_WindowsSpoke",
+                "Deploy_AppGateway"
             ],
             "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
             "properties": {
@@ -363,6 +367,9 @@
                     },
                     "Windows-Spoke-ResourceId": {
                         "value": "[reference('Deploy_WindowsSpoke').outputs.Windows_vNet_Id.value]"
+                    },
+                    "AppGateway-Spoke-ResourceId":{
+                        "value": "[reference('Deploy_AppGateway').outputs.AppGateway_vNet_Id.value]"
                     }
                 }
             }
