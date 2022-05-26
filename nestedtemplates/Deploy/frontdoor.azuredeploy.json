@@ -29,7 +29,7 @@
             "properties": {}
         },
         {
-            "type": "Microsoft.Cdn/Profiles/AfdEndpoints",
+            "type": "Microsoft.Cdn/Profiles/endpoints",
             "apiVersion": "2020-09-01",
             "name": "[concat(variables('FrontDoorProfileName'), '/', variables('FrontDoorEndpointName'))]",
             "location": "[resourceGroup().location]",
@@ -64,12 +64,12 @@
             }
         },
         {
-            "type": "Microsoft.Cdn/Profiles/AfdEndpoints/Routes",
+            "type": "Microsoft.Cdn/Profiles/endpoints/Routes",
             "apiVersion": "2020-09-01",
             "name": "[concat(variables('FrontDoorProfileName'), '/', variables('FrontDoorEndpointName'), '/', variables('FrontDoorRouteName'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Cdn/Profiles', variables('FrontDoorProfileName'))]",
-                "[resourceId('Microsoft.Cdn/Profiles/afdEndpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]",
+                "[resourceId('Microsoft.Cdn/Profiles/endpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]",
                 "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('FrontDoorProfileName'), variables('FrontDoorOriginGroupName'))]",
                 "[resourceId('Microsoft.Cdn/profiles/originGroups/Origins', variables('FrontDoorProfileName'), variables('FrontDoorOriginGroupName'), variables('FrontDoorOriginName'))]"
             ],
@@ -256,7 +256,7 @@
             "name": "[concat(variables('FrontDoorProfileName'), '/', variables('FrontDoorSecPolName'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Cdn/Profiles', variables('FrontDoorProfileName'))]",
-                "[resourceId('Microsoft.Cdn/Profiles/afdEndpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]",
+                "[resourceId('Microsoft.Cdn/Profiles/endpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]",
                 "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', variables('FrontDoorWAFName'))]"
             ],
             "properties": {
@@ -269,7 +269,7 @@
                         {
                             "domains": [
                                 {
-                                "id": "[resourceId('Microsoft.Cdn/Profiles/afdEndpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]"
+                                "id": "[resourceId('Microsoft.Cdn/Profiles/endpoints', variables('FrontDoorProfileName'), variables('FrontDoorEndpointName'))]"
                                 }
                             ],
                             "patternsToMatch": [
