@@ -65,7 +65,7 @@
     "functions": [],
     "variables": {
         "deploy":"/nestedtemplates/Deploy/",
-        "configure":"/nestedtemplates/Configure/",
+        "configure":"/nestedtemplates/Configure/"
     },
     "resources": [
         {
@@ -265,23 +265,20 @@
                     "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'appgateway.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
-                    "rg-name":{
-                        "value":"[parameters('rg-name')]"
-                    },
                     "hub-networkID":{
                         "value":"[reference('Deploy_Hub').outputs.hubNetworkId.value]"
                     },
                     "appGatewaySpoke": {
                         "value": {
-                            "name": "[concat(parameters('rg-name'), '-vnet-spoke-WindowsServers')]",
+                            "name": "[concat(parameters('rg-name'), '-vnet-spoke-appGateway')]",
                             "addressPrefix": "10.150.0.0/16",
                             "subnetName": "snet-spoke-resources",
                             "subnetPrefix": "10.50.0.0/16",
-                            "subnetNsgName": "NOT_USED"
+                            "subnetNsgName": "AppGatway-resources-nsg"
                         }
                     },
                     "azureFirewallRouteId": {
-                        "type": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
+                        "value": "[reference('Deploy_Hub').outputs.azFirewallRouteId.value]"
                     }
                 }
             }
