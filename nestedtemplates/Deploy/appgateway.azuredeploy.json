@@ -119,7 +119,7 @@
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('appGatewaySpoke').name, parameters('appGatewaySpoke').subnetName)]"
               },
-              "privateIPAddress": "10.15.0.70",
+              "privateIPAddress": "10.150.0.70",
               "privateIPAllocationMethod": "Static"
             }
           }
