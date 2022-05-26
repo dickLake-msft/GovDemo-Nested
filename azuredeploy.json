@@ -66,8 +66,6 @@
     "variables": {
         "deploy":"/nestedtemplates/Deploy/",
         "configure":"/nestedtemplates/Configure/",
-        "appServicePlan":"value",
-        "appService":"value"
     },
     "resources": [
         {
