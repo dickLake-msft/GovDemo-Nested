@@ -35,9 +35,6 @@
                   "name": "[parameters('appGatewaySpoke').subnetName]",
                   "properties": {
                       "addressPrefix": "[parameters('appGatewaySpoke').subnetPrefix]",
-                      "networkSecurityGroup": {
-                          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('appGatewaySpoke').subnetNsgName)]"
-                      },
                       "routeTable": {
                           "id": "[parameters('azureFirewallRouteId')]"
                       }
