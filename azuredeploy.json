@@ -347,6 +347,26 @@
             }
         },
         {
+            "name":"Deploy_FrontDoor",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn":[
+                "Deploy_AppGateway"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), '-WebApps-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'frontdoor.azuredeploy.json', parameters('_sasToken'))]"
+                },
+                "parameters":{
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    }
+                }
+            }
+        },
+        {
             "name":"Configure_Hub_To_Spoke_Peerings",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
