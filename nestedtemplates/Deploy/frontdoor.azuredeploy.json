@@ -23,7 +23,7 @@
             "name": "[variables('FrontDoorProfileName')]",
             "location": "global",
             "sku": {
-                "name": "Standard_AzureFrontDoor"
+                "name": "Standard_Microsoft"
             },
             "kind": "frontdoor",
             "properties": {}
