@@ -13,7 +13,7 @@
         "FrontDoorOriginGroupName": "[concat(parameters('rg-name'), '-NS-FD-OWASP')]",
         "FrontDoorRouteName": "[concat(parameters('rg-name'), '-NS-FD-APPGw')]",
         "FrontDoorOriginName": "[concat(parameters('rg-name'), '-NS-FD-OWASP-APPGW')]",
-        "FrontDoorWAFName": "[concat(parameters('rg-name'), '-NSFD-WAF')]",
+        "FrontDoorWAFName": "[concat(parameters('rg-name'), 'NSFDWAF')]",
         "FrontDoorSecPolName": "[concat(parameters('rg-name'), '-NS-FD-SecPol')]"
     },
     "resources": [
@@ -23,7 +23,7 @@
             "name": "[variables('FrontDoorProfileName')]",
             "location": "global",
             "sku": {
-                "name": "Premium_AzureFrontDoor"
+                "name": "Standard_AzureFrontDoor"
             },
             "kind": "frontdoor",
             "properties": {}
