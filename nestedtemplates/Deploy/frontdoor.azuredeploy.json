@@ -49,7 +49,20 @@
                                 "operator": "GeoMatch",
                                 "negateCondition": false,
                                 "matchValue": [
-                                    "CN"
+                                    "CN",
+                                    "AF",
+                                    "BY",
+                                    "EG",
+                                    "IQ",
+                                    "JO",
+                                    "KG",
+                                    "KP",
+                                    "KZ",
+                                    "LA",
+                                    "LR",
+                                    "MN",
+                                    "RU",
+                                    "UZ"
                                 ],
                                 "transforms": []
                                 }
