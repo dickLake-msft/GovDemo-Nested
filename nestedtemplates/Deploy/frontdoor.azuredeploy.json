@@ -8,13 +8,13 @@
     },
     "functions": [],
     "variables": {
-        "FrontDoorProfileName": "[concat(parameters('rg-name'), '-NS-FD')]",
-        "FrontDoorEndpointName": "[concat(parameters('rg-name'), '-NS-FD-Endpoint')]",
-        "FrontDoorOriginGroupName": "[concat(parameters('rg-name'), '-NS-FD-OWASP')]",
-        "FrontDoorRouteName": "[concat(parameters('rg-name'), '-NS-FD-APPGw')]",
-        "FrontDoorOriginName": "[concat(parameters('rg-name'), '-NS-FD-OWASP-APPGW')]",
+        "FrontDoorProfileName": "[concat(parameters('rg-name'), '-FD-Juice')]",
         "FrontDoorWAFName": "[concat(parameters('rg-name'), 'NSFDWAF')]",
-        "FrontDoorSecPolName": "[concat(parameters('rg-name'), '-NS-FD-SecPol')]"
+        "healthProbeName":"[concat(variables('FrontDoorProfileName'),'-healthProbeSettings-', uniqueString(resourceGroup().name))]",
+        "loadBalancingName": "[concat(variables('FrontDoorProfileName'),'-loadBalancingSettings-', uniqueString(resourceGroup().name))]",
+        "frontendEndpointName": "[concat(variables('FrontDoorProfileName'), '-azurefd-us')]",
+        "frontendEndpointHostName": "[concat(variables('FrontDoorProfileName'),'.azurefd.us')]",
+        "backendPoolName": "[concat(parameters('rg-name'), '-FD-backendPool1')]"
     },
     "resources": [
         {
@@ -23,16 +23,16 @@
             "name": "[variables('FrontDoorWAFName')]",
             "location": "global",
             "sku": {
-                "name": "Premium_AzureFrontDoor"
+                "name": "Classic_AzureFrontDoor"
             },
             "properties": {
                 "policySettings": {
                     "enabledState": "Enabled",
                     "mode": "Prevention",
-                    "redirectUrl": "https://www.microsoft.com/en-us/edge?r=1",
+                    "redirectUrl": "https://www.microsoft.com/en-us/edge",
                     "customBlockResponseStatusCode": 403,
                     "customBlockResponseBody": "[base64('<html><head><title>WAF Demo</title></head><body bgcolor=\"#FFB299\"><p><h1><strong>WAF Unique Response Code</strong></h1></p><p>Contact us and provide the following code: {(azure-ref)}<br></p></body></html>')]",
-                    "requestBodyCheck": "Enabled"
+                    "requestBodyCheck": "Disabled"
                 },
                 "customRules": {
                     "rules": [
@@ -117,14 +117,17 @@
             "apiVersion": "2020-05-01",
             "type": "Microsoft.Network/frontdoors",
             "name": "[variables('FrontDoorProfileName')]",
-            "location": "usgovvirginia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', variables('FrontDoorWAFName'))]"
+            ],
+            "location": "global",
             "tags": {},
             "properties": {
-                "friendlyName": "[concat(parameters('rg-name'), '-FrontDoor')]",
+                "friendlyName": "[variables('FrontDoorProfileName')]",
                 "enabledState": "Enabled",
                 "healthProbeSettings": [
                     {
-                        "name": "healthProbeSettings-1653604895866",
+                        "name": "[variables('healthProbeName')]",
                         "properties": {
                             "path": "/",
                             "protocol": "Https",
@@ -136,7 +139,7 @@
                 ],
                 "loadBalancingSettings": [
                     {
-                        "name": "loadBalancingSettings-1653604895866",
+                        "name": "[variables('loadBalancingName')]",
                         "properties": {
                             "sampleSize": 4,
                             "successfulSamplesRequired": 2,
@@ -146,13 +149,13 @@
                 ],
                 "frontendEndpoints": [
                     {
-                        "name": "ContosoGov-FD-frontEndEndpoint",
+                        "name": "[variables('frontendEndpointName')]",
                         "properties": {
-                            "hostName": "asdfgtest.azurefd.us",
+                            "hostName": "[variables('frontendEndpointHostName')]",
                             "sessionAffinityEnabledState": "Enabled",
                             "sessionAffinityTtlSeconds": 0,
                             "webApplicationFirewallPolicyLink": {
-                                "id":"[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies',variables('FrontDoorWAFName'))]",
+                                "id":"[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies',variables('FrontDoorWAFName'))]"
                             },
                             "customHttpsConfiguration": null
                         }
@@ -160,36 +163,35 @@
                 ],
                 "backendPools": [
                     {
-                        "name": "ContosoGov-FD-backendPool1",
+                        "name": "[variables('backendPoolName')]",
                         "properties": {
                             "backends": [
                                 {
-                                    "address": "52.244.54.210",
+                                    "address": "contosogov-owaspdirect.azurewebsites.us",
                                     "enabledState": "Enabled",
                                     "httpPort": 80,
                                     "httpsPort": 443,
                                     "priority": 1,
                                     "weight": 50,
-                                    "backendHostHeader": "52.244.54.210"
+                                    "backendHostHeader": "contosogov-owaspdirect.azurewebsites.us"
                                 }
                             ],
                             "loadBalancingSettings": {
-                                "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/loadBalancingSettings/loadBalancingSettings-1653604895866"
+                                "id": "[resourceId('Microsoft.Network/frontdoors/loadBalancingSettings',variables('FrontDoorProfileName'), variables('loadBalancingName'))]"
                             },
                             "healthProbeSettings": {
-                                "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/healthProbeSettings/healthProbeSettings-1653604895866"
+                                "id": "[resourceId('Microsoft.Network/frontdoors/healthProbeSettings', variables('FrontDoorProfileName'), variables('healthProbeName'))]"
                             }
-                        },
-                        "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/backendPools/asdfg-backend"
+                        }
                     }
                 ],
                 "routingRules": [
                     {
-                        "name": "asdfg-routingrule",
+                        "name": "[concat(parameters('rg-name'), '-routingrule-1')]",
                         "properties": {
                             "frontendEndpoints": [
                                 {
-                                    "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/frontendEndpoints/asdfg-azurefd-us"
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('FrontDoorProfileName')), concat('/frontendEndpoints/', variables('frontendEndpointName')))]"
                                 }
                             ],
                             "acceptedProtocols": [
@@ -204,12 +206,11 @@
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
                                 "forwardingProtocol": "HttpsOnly",
                                 "backendPool": {
-                                    "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/backendPools/asdfg-backend"
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('FrontDoorProfileName')), concat('/backendPools/', variables('backendPoolName')))]"
                                 },
                                 "cacheConfiguration": null
                             }
-                        },
-                        "id": "/subscriptions/04110ca7-4fe3-4c2d-9ff7-23aa92b86c79/resourceGroups/ContosoGov-WebApps-RG/providers/Microsoft.Network/frontdoors/asdfg/routingRules/asdfg-routingrule"
+                        }
                     }
                 ],
                 "backendPoolsSettings": {
@@ -221,3 +222,5 @@
     ],
     "outputs": {}
 }
+
+

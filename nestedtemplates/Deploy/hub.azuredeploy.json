@@ -46,9 +46,9 @@
                 "subnetPrefix":"10.0.4.0/26"
             }
         },
-        "deployVpnGateway": {
-            "type": "bool",
-            "defaultValue": false
+        "rg-name": {
+            "type": "string",
+            "defaultValue": "ContosoGov"
         }
     },
     "functions": [],
@@ -133,6 +133,23 @@
             }
         },
         {
+            "type": "Microsoft.Network/firewallPolicies",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(parameters('rg-name'), '-FirewallPolicy')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "sku": {},
+                "threatIntelMode": "Alert",
+                "threatIntelWhitelist": {
+                    "ipAddresses": [],
+                    "fqdns": []
+                }
+            },
+            "resources": []
+        },
+        {
             "comments": "Azure Firewall",
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2020-05-01",
@@ -140,7 +157,8 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall').publicIPAddressName)]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall').publicIPAddressName)]",
+                "[resourceId('Microsoft.Network/firewallPolicies', concat(parameters('rg-name'), '-FirewallPolicy'))]"
             ],
             "properties": {
                 "sku": {
@@ -161,7 +179,10 @@
                             }
                         }
                     }
-                ]
+                ],
+                "firewallPolicy":{
+                    "id": "[resourceId('Microsoft.Network/firewallPolicies', concat(parameters('rg-name'), '-FirewallPolicy'))]"
+                }
             },
             "resources": [
                 
@@ -357,53 +378,6 @@
                 ]
             },
             "resources": []
-        },
-        {
-            "comments": "Public IP address for VPN Gateway",
-            "condition": "[parameters('deployVpnGateway')]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-11-01",
-            "name": "[parameters('vpnGateway').pipName]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            }
-        },
-        {
-            "comments": "VPN Gateway configuration (optional)",
-            "condition": "[parameters('deployVpnGateway')]",
-            "type": "Microsoft.Network/virtualNetworkGateways",
-            "apiVersion": "2019-11-01",
-            "name": "[parameters('vpnGateway').name]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnGateway').pipName)]"
-            ],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').name, parameters('vpnGateway').subnetName)]"
-                            },
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnGateway').pipName)]"
-                            }
-                        },
-                        "name": "vnetGatewayConfig"
-                    }
-                ],
-                "sku": {
-                    "name": "Basic",
-                    "tier": "Basic"
-                },
-                "gatewayType": "Vpn",
-                "vpnType": "RouteBased",
-                "enableBgp": false
-            },
-            "resources": [ ]
         }
     ],
     "outputs": {
