@@ -151,6 +151,7 @@
         },
         {
             "type": "Microsoft.Network/firewallpolicies/ruleCollectionGroups",
+            "condition": false,
             "comments": "THIS MAY NEED TO CHANGE TO ADOPT TO THE NETWORK",
             "apiVersion": "2020-11-01",
             "name": "[concat(parameters('rg-name'), '-FirewallPolicy/DefaultApplicationRuleCollectionGroup')]",
@@ -232,6 +233,7 @@
         {
             "type": "Microsoft.Network/firewallpolicies/ruleCollectionGroups",
             "comments": "THIS MAY NEED TO CHANGE TO ADOPT TO THE NETWORK",
+            "condition": false,
             "apiVersion": "2020-11-01",
             "name": "[concat(parameters('rg-name'), '-FirewallPolicy/DefaultDnatRuleCollectionGroup')]",
             "location": "[resourceGroup().location]",
@@ -276,6 +278,7 @@
         {
             "type": "Microsoft.Network/firewallpolicies/ruleCollectionGroups",
             "comments": "THIS MAY NEED TO CHANGE TO ADOPT TO THE NETWORK",
+            "condition": false,
             "apiVersion": "2020-11-01",
             "name": "[concat(parameters('rg-name'), '-FirewallPolicy/DefaultNetworkRuleCollectionGroup')]",
             "location": "usgovarizona",
