@@ -346,7 +346,7 @@
         {
             "name":"Deploy_FrontDoor",
             "type": "Microsoft.Resources/deployments",
-            "condition":false,
+            "condition":true,
             "apiVersion": "2021-04-01",
             "dependsOn":[
                 "Deploy_AppGateway"
@@ -367,7 +367,7 @@
         {
             "name":"Deploy_ContainerRegistry",
             "type": "Microsoft.Resources/deployments",
-            "condition":false,
+            "condition":true,
             "apiVersion": "2021-04-01",
             "dependsOn":[
                 "Deploy_ResourceGroups"
