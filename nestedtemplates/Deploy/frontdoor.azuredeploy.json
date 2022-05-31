@@ -37,7 +37,7 @@
                 "customRules": {
                     "rules": [
                         {
-                            "name": "BlockGeoLocationChina",
+                            "name": "BlockGeoLocation1",
                             "enabledState": "Enabled",
                             "priority": 100,
                             "ruleType": "MatchRule",
@@ -57,7 +57,26 @@
                                     "JO",
                                     "KG",
                                     "KP",
-                                    "KZ",
+                                    "KZ"
+                                ],
+                                "transforms": []
+                                }
+                            ],
+                            "action": "Block"
+                        },
+                                                {
+                            "name": "BlockGeoLocation2",
+                            "enabledState": "Enabled",
+                            "priority": 100,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "matchConditions": [
+                                {
+                                "matchVariable": "RemoteAddr",
+                                "operator": "GeoMatch",
+                                "negateCondition": false,
+                                "matchValue": [
                                     "LA",
                                     "LR",
                                     "MN",

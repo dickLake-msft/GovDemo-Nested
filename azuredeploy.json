@@ -17,7 +17,7 @@
         },
         "rg-location": {
             "type": "string",
-            "defaultValue": "usgovarizona",
+            "defaultValue": "usgovvirginia",
             "allowedValues":["usgovvirginia","usgoviowa","usdodeast","usdodcentral","usgovtexas", "usgovarizona"],
             "metadata": {
                 "description": "Location where resources will be held"
@@ -29,14 +29,14 @@
         },
         "linuxVMCount": {
             "type": "int",
-            "defaultValue":0,
+            "defaultValue":2,
             "metadata": {
                 "description": "Number of Ubuntu machines to deploy to Linux Spoke"
             }
         },
         "windowsVMCount": {
             "type": "int",
-            "defaultValue":0,
+            "defaultValue":2,
             "metadata": {
                 "description": "Number of Windows machines to deploy to Windows Spoke"
             }
@@ -365,25 +365,32 @@
             }
         },
         {
-            "name":"Deploy_ContainerRegistry",
+            "name": "Deploy_ContainerRegistryGithubExample",
             "type": "Microsoft.Resources/deployments",
-            "condition":true,
             "apiVersion": "2021-04-01",
-            "dependsOn":[
+            "comments": "Using GitHub Quickstart template",
+            "dependsOn": [
                 "Deploy_ResourceGroups"
             ],
-            "resourceGroup":"[concat(parameters('rg-name'), '-Containers-RG')]",
+            "resourceGroup": "[concat(parameters('rg-name'), '-Containers-RG')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'containerregistry.azuredeploy.json', parameters('_sasToken'))]"
+                    "uri":"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.resources/deployment-script-azcli-acr-import/azuredeploy.json"
                 },
-                "parameters":{
-                    "rg-name":{
-                        "value":"[parameters('rg-name')]"
+                "parameters": {
+                    "AcrName":{
+                        "value":"[concat(parameters('rg-name'), 'containersReg')]"
+                    },
+                    "Images":{
+                        "value":[
+                            "docker.io/bitnami/external-dns:latest",
+                            "quay.io/jetstack/cert-manager-cainjector:v1.7.2",
+                            "ghcr.io/kedacore/keda-metrics-apiserver:main"
+                        ]
                     }
                 }
-            }
+            }            
         },
         {
             "name":"Configure_Hub_To_Spoke_Peerings",
