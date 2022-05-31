@@ -134,9 +134,6 @@
                             "subnetPrefix": "10.0.2.0/27",
                             "pipName": "vgw-gateway-pip"
                         }
-                    },
-                    "deployVpnGateway": {
-                        "value": false
                     }
                 }
             }
@@ -359,6 +356,27 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'frontdoor.azuredeploy.json', parameters('_sasToken'))]"
+                },
+                "parameters":{
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Deploy_ContainerRegistry",
+            "type": "Microsoft.Resources/deployments",
+            "condition":false,
+            "apiVersion": "2021-04-01",
+            "dependsOn":[
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), '-Containers-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'containerregistry.azuredeploy.json', parameters('_sasToken'))]"
                 },
                 "parameters":{
                     "rg-name":{
