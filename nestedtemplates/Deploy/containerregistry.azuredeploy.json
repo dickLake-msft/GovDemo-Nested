@@ -24,5 +24,10 @@
             }
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "ContainerRegistryResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.ContainerRegistry/registries', concat(parameters('rg-name'), 'containerReg'))]"
+        }
+    }
 }
