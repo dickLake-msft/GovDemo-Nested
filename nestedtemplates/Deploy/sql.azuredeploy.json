@@ -251,7 +251,7 @@
         },
         "isPermissionAssigned": {
             "type": "bool",
-            "defaultValue": ""
+            "defaultValue": false
         },
         "sqlLedgerTemplateLink": {
             "type": "string",
