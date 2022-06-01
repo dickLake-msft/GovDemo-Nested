@@ -40,6 +40,14 @@
                 "publisher": "Microsoft",
                 "promotionCode": ""
             }
+        },
+        {
+            "type":"Microsoft.Security/autoProvisioningSettings",
+            "apiVersion":"20170-08-01-preview",
+            "name":"AutoProvisioningSettings",
+            "properties":{
+                "autoProvision":"On"
+            }
         }
     ],
     "outputs": {}

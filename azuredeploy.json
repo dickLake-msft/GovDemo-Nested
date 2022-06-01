@@ -417,6 +417,21 @@
             }
         },
         {
+            "name":"Deploy_CosmosDbGithub",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-Databases-RG')]",
+            "properties":{
+                "mode": "Incremental",
+                "templateLink":{
+                    "uri":"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.documentdb/microsoft-defender-cosmosdb-create-account/azuredeploy.json"
+                }
+            }
+        },
+        {
             "name":"Configure_Hub_To_Spoke_Peerings",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
@@ -441,6 +456,21 @@
                     "AppGateway-Spoke-ResourceId":{
                         "value": "[reference('Deploy_AppGateway').outputs.AppGateway_vNet_Id.value]"
                     }
+                }
+            }
+        },
+        {
+            "name":"Deploy_DefenderForServerMonitoring_Workbook",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-SOC-RG')]",
+            "properties":{
+                "mode": "Incremental",
+                "templateLink":{
+                    "uri":"https://raw.githubusercontent.com/Azure/Microsoft-Defender-for-Cloud/main/Workbooks/Defender%20for%20Servers%20Monitoring/azuredeploy.json"
                 }
             }
         }
