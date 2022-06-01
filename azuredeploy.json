@@ -393,35 +393,7 @@
             }            
         },
         {
-            "name":"Deploy_SQL",
-            "condition": false,
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2021-04-01",
-            "dependsOn": [
-                "Deploy_ResourceGroups"
-            ],
-            "resourceGroup": "[concat(parameters('rg-name'), '-Databases-RG')]",
-            "properties":{
-                "mode": "Incremental",
-                "templateLink":{
-                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'sql.azuredeploy.json', parameters('_sasToken'))]"
-                },
-                "parameters": {
-                    "rg-name":{
-                        "value":"[parameters('rg-name')]"
-                    },
-                    "administratorLoginPassword":{
-                        "value": "[parameters('adminPassword')]"
-                    },
-                    "isPermissionAssigned":{
-                        "value":false
-                    }
-                }
-            }
-        },
-                {
             "name":"Deploy_SQLGithub",
-            "condition": true,
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "dependsOn": [
@@ -434,15 +406,7 @@
                     "uri":"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.sql/sql-database/azuredeploy.json"
                 },
                 "parameters": {
-                    "serverName":{
-                        "value": "[uniqueString('sql', resourceGroup().id)]"
-                    },
-                    "sqlDBName":{
-                        "value":"ExampleDb"
-                    },
-                    "location":{
-                        "value":"[resourceGroup().location]"
-                    },
+
                     "administratorLogin":{
                         "value":"SqlAdmin"
                     },
