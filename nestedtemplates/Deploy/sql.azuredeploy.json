@@ -367,7 +367,7 @@
                         "endIpAddress": "0.0.0.0",
                         "startIpAddress": "0.0.0.0"
                     },
-                    "type": "firewallRules"
+                    "type": "firewallrules"
                 },
                 {
                     "apiVersion": "2014-04-01",
@@ -393,7 +393,7 @@
                         "endIpAddress": "[parameters('clientIpValue')]",
                         "startIpAddress": "[parameters('clientIpValue')]"
                     },
-                    "type": "firewallRules"
+                    "type": "firewallrules"
                 },
                 {
                     "condition": "[parameters('enableADS')]",
