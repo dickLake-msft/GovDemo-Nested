@@ -67,7 +67,7 @@
                                                 {
                             "name": "BlockGeoLocation2",
                             "enabledState": "Enabled",
-                            "priority": 100,
+                            "priority": 110,
                             "ruleType": "MatchRule",
                             "rateLimitDurationInMinutes": 1,
                             "rateLimitThreshold": 100,

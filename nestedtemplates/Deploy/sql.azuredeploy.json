@@ -367,7 +367,7 @@
                         "endIpAddress": "0.0.0.0",
                         "startIpAddress": "0.0.0.0"
                     },
-                    "type": "firewallrules"
+                    "type": "Microsoft.Sql/servers/firewallRules"
                 },
                 {
                     "apiVersion": "2014-04-01",
@@ -388,12 +388,12 @@
                         "[concat('Microsoft.Sql/servers/', variables('serverName'))]"
                     ],
                     "location": "[resourceGroup().location]",
-                    "name": "[parameters('clientIpRuleName')]",
+                    "name": "[concat(variables('serverName'), '/AllowClientIp')]",
                     "properties": {
                         "endIpAddress": "[parameters('clientIpValue')]",
                         "startIpAddress": "[parameters('clientIpValue')]"
                     },
-                    "type": "firewallrules"
+                    "type": "Microsoft.Sql/servers/firewallRules"
                 },
                 {
                     "condition": "[parameters('enableADS')]",
