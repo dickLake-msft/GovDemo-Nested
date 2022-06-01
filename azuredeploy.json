@@ -411,6 +411,9 @@
                     },
                     "administratorLoginPassword":{
                         "value": "[parameters('adminPassword')]"
+                    },
+                    "isPermissionAssigned":{
+                        "value":false
                     }
                 }
             }
