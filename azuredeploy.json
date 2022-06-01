@@ -393,6 +393,29 @@
             }            
         },
         {
+            "name":"Deploy_SQL",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "Deploy_ResourceGroups"
+            ],
+            "resourceGroup": "[concat(parameters('rg-name'), '-Databases-RG')]",
+            "properties":{
+                "mode": "Incremental",
+                "templateLink":{
+                    "uri":"[concat(parameters('artifactsLocation'), variables('Deploy'), 'sql.azuredeploy.json', parameters('_sasToken'))]"
+                },
+                "parameters": {
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    },
+                    "administratorLoginPassword":{
+                        "value": "[parameters('adminPassword')]"
+                    }
+                }
+            }
+        },
+        {
             "name":"Configure_Hub_To_Spoke_Peerings",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
