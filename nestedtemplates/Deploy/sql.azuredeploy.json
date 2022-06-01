@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "rg-name": {
@@ -388,7 +388,7 @@
                         "[concat('Microsoft.Sql/servers/', variables('serverName'))]"
                     ],
                     "location": "[resourceGroup().location]",
-                    "name": "[concat(variables('serverName'), '/AllowClientIp')]",
+                    "name": "AllowClientIp",
                     "properties": {
                         "endIpAddress": "[parameters('clientIpValue')]",
                         "startIpAddress": "[parameters('clientIpValue')]"
