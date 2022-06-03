@@ -40,22 +40,6 @@
                 "publisher": "Microsoft",
                 "promotionCode": ""
             }
-        },
-        {
-            "type":"Microsoft.Security/autoProvisioningSettings",
-            "apiVersion":"2017-08-01-preview",
-            "name":"AutoProvisioningSettings",
-            "properties":{
-                "autoProvision":"On"
-            }
-        },
-        {
-            "type": "Microsoft.Security/pricings",
-            "apiVersion": "2022-03-01",
-            "name": "string",
-            "properties": {
-                "pricingTier": "Standard"
-            }
         }
     ],
     "outputs": {}

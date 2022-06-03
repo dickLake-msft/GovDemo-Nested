@@ -140,7 +140,9 @@
             "dependsOn": [],
             "tags": {},
             "properties": {
-                "sku": {},
+                "sku": {
+                    "tier": "Standard"
+                },
                 "threatIntelMode": "Alert",
                 "threatIntelWhitelist": {
                     "ipAddresses": [],
@@ -149,7 +151,6 @@
             },
             "resources": []
         },
-
         {
             "comments": "Azure Firewall",
             "type": "Microsoft.Network/azureFirewalls",
@@ -393,6 +394,10 @@
         "hubNetworkId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Network/virtualNetworks',parameters('hubNetwork').name)]"
+        },
+        "azFirewallPolicyId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/firewallPolicies',concat(parameters('rg-name'), '-FirewallPolicy'))]"
         }
     }
 }

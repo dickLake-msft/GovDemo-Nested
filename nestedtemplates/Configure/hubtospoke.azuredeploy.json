@@ -67,7 +67,7 @@
             }
         },
         {
-            "comments": "Virtual network peering hub to spoke two",
+            "comments": "Virtual network peering hub to AppGwSubnet",
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "apiVersion": "2020-05-01",
             "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-three'))]",

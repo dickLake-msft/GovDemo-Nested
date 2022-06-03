@@ -432,6 +432,26 @@
             }
         },
         {
+            "name":"Configure_Firewall",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "Deploy_Hub"
+            ],
+            "resourceGroup":"[concat(parameters('rg-name'), '-Hub-RG')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('artifactsLocation'), variables('Configure'), 'firewallRules.azuredeploy.json' , parameters('_sasToken'))]"
+                },
+                "parameters": {
+                    "rg-name":{
+                        "value":"[parameters('rg-name')]"
+                    }
+                }
+            }
+        },
+        {
             "name":"Configure_Hub_To_Spoke_Peerings",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
