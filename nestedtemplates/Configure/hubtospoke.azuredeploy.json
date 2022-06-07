@@ -41,7 +41,7 @@
             "dependsOn": [],
             "properties": {
                 "allowVirtualNetworkAccess": true,
-                "allowForwardedTraffic": false,
+                "allowForwardedTraffic": true,
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
@@ -58,7 +58,7 @@
             "dependsOn": [],
             "properties": {
                 "allowVirtualNetworkAccess": true,
-                "allowForwardedTraffic": false,
+                "allowForwardedTraffic": true,
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {

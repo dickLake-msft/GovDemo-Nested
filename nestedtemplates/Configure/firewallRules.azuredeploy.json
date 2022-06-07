@@ -18,7 +18,7 @@
     "functions": [],
     "variables": {},
     "resources": [
-                {
+        {
             "type": "Microsoft.Network/firewallpolicies/ruleCollectionGroups",
             "apiVersion": "2020-11-01",
             "name": "[concat(parameters('rg-name'), '-FirewallPolicy/DefaultNetworkRuleCollectionGroup')]",
@@ -83,7 +83,9 @@
             "apiVersion": "2020-11-01",
             "name": "[concat(parameters('rg-name'), '-FirewallPolicy/DefaultApplicationRuleCollectionGroup')]",
             "location": "[resourceGroup().location]",
-            "dependsOn": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/firewallpolicies/ruleCollectionGroups', concat(parameters('rg-name'), '-FirewallPolicy'), 'DefaultNetworkRuleCollectionGroup')]"
+            ],
             "properties": {
                 "priority": 300,
                 "ruleCollections": [
