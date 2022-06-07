@@ -447,6 +447,12 @@
                 "parameters": {
                     "rg-name":{
                         "value":"[parameters('rg-name')]"
+                    },
+                    "windowsIpSpace": {
+                        "value": "10.100.0.0/16"
+                    },
+                    "linuxIpSpace": {
+                        "value": "10.200.0.0/16"
                     }
                 }
             }
